@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+<style>
+  html {
+    background-color: #ddd;
+    /* font-family: 'Open Sans', sans-serif; */
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+  }
+  body > h1 {
+    text-align: center;
+    text-transform: uppercase;
+  }
+  .semantic-editor {
+    margin: 0 auto !important;
+    max-width: 840px;
+  }
+</style>
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="../dist/semantic-editor.css"/>
+<script src="../dist/semantic-editor.js"></script>
+</head>
+<body>
+  <h1>Semantic editor</h1>
+
+  <div id="my-editor">
+    <h1 contenteditable="true">What you see is NOT what you get...</h1>
+
+    <h2 contenteditable="true">... it's structure and semantics</h2>
+
+    <p contenteditable="true">
+      Every people need a good text for the web, but no semantic editor really exist
+      so we are going to try to fix this, someway.
+    </p>
+
+    <h2 contenteditable="true">Some content</h2>
+
+    <h3 contenteditable="true">A simple paragraph</h3>
+
+    <p contenteditable="true">
+      Let's start with some foo content, good theming, and we'll see what happen after
+      that.
+    </p>
+
+    <p contenteditable="true">
+      And yet it has <em>paragraphs</em> in which you may have
+      <a href="#top">links, <strong>big links</strong></a>, that points to somewhere.
+    </p>
+
+    <h3 contenteditable="true">A blockquote</h3>
+
+    <figure>
+      <blockquote contenteditable="true">
+        <p>
+          There is no better than adversity. Every defeat, every heartbreak, every loss, contains its own seed,
+          its own lesson on how to improve your performance the next time.
+        </p>
+      </blockquote>
+      <footer contenteditable="true">
+        <cite>Malcom X.</cite>
+      </footer>
+    </figure>
+
+    <h1 contenteditable="true">Todo-list</h1>
+
+    <ul>
+      <li contenteditable="true">enter key in h* should switch to a p under,</li>
+      <li contenteditable="true">enter key in p should create a new p under,</li>
+      <li contenteditable="true">enter key in li should create a new li under,</li>
+      <li contenteditable="true">enter key in dd should create a dt under,</li>
+      <li contenteditable="true">enter key in dt should create a dd under,</li>
+      <li contenteditable="true">inline element should be underlined only, border have weird side effects,</li>
+      <li contenteditable="true"><del>blockquote should behave like an editor by itself</del>,</li>
+      <li contenteditable="true">on hover and left click, popup with allowed nested element should be created,</li>
+      <li contenteditable="true">when typing or clicking on a non editable element, popup should go away,</li>
+      <li contenteditable="true">set a column, on side, which displays pictograms of what's aside,</li>
+      <li contenteditable="true">prevent focusing out the editor (optional, accessibility),</li>
+      <li contenteditable="true">title text (accessiblity) should tell what enters does in element,</li>
+      <li contenteditable="true">what is possible to do should be a in ruleset, somehow,</li>
+      <li contenteditable="true">make it pluggable (medias, embed code, iframes),</li>
+      <li contenteditable="true">when selection, provide a bubble/popup that gives possible insertions/alterations,</li>
+      <li contenteditable="true">whichever happens, editor should always enforce typographic rules (no manual line feed, no empty paragraph).</li>
+    </ul>
+
+  </div>
+
+  <script type="text/javascript">
+    var editor = document.querySelector('#my-editor');
+    if (editor) {
+      SemanticEditor.editor(editor);
+    }
+  </script>
+</body>
+</html>

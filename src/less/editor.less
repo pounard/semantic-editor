@@ -1,0 +1,151 @@
+
+.locked-element() {
+  border-color: @semantic-color-locked-border;
+  background-color: @semantic-color-locked-background;
+
+  padding: 0.5em 0.5em;
+}
+
+.inline-element() {
+  display: inline-block; // @todo remove me later
+
+  border: 1px dotted;
+  border-color: @semantic-color-inline-border;
+  background-color: @semantic-color-editable-background;
+  &:hover, &:focus {
+    border: 1px solid;
+  }
+
+  padding: 0;
+  margin: 0;
+}
+
+.editable-element() {
+  border: 1px dotted;
+  border-color: @semantic-color-editable-border;
+  background-color: @semantic-color-editable-background;
+  &:hover, &:focus {
+    border: 1px solid;
+  }
+  &:focus {
+    background-color: @semantic-color-active-background;
+  }
+
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+
+  > a, > em, > cite, > strong, > del {
+    // Inline element can be nested to the infinite and beyond
+    &, > a, > em, > cite, > strong, > del {
+      .inline-element();
+    }
+  }
+}
+
+.semantic-editor {
+  box-sizing: border-box;
+
+  border: 2px solid @semantic-editor-border-color;
+  background-color: @semantic-editor-background;
+
+  padding: @semantic-editor-padding;
+  margin: @semantic-editor-margin;
+
+  * {
+    &:focus, &:hover {
+      outline: none;
+    }
+
+    // Provide a visual indicator for invalid items in tree
+    border: 1px solid @semantic-color-invalid-border-border;
+    background-color: @semantic-color-invalid-background-border;
+
+    // Default paddings and margins
+    margin: 0;
+    padding: 0.5em 1em;
+  }
+
+  *[contenteditable="true"] {
+    .editable-element();
+  }
+
+  /* Some basic styling */
+  em, cite {
+    font-style: oblique;
+  }
+  strong {
+    font-weight: bold;
+  }
+
+  /* Lists */
+  ul,  ol {
+    .locked-element();
+
+    // For readability
+    list-style-position: inside;
+  }
+
+  dl {
+    .locked-element();
+  }
+
+  /* Block elements */
+  figure {
+    .locked-element();
+
+    > blockquote, > footer, > legend {
+      .locked-element();
+    }
+  }
+
+  /* Headings */
+  h1,  h2,  h3,  h4,  h5,  h6 {
+    .editable-element();
+
+    border-color: @semantic-color-heading-border;
+    font-weight: bold;
+    padding: 0.5em 0.5em;
+
+    &::before {
+      content: "H.0";
+      color: @semantic-editor-hint-color;
+      margin-right: 1em;
+    }
+  }
+  h1 {
+    font-size: 1.6em;
+    &::before {
+      content: "1.";
+    }
+  }
+  h2 {
+    font-size: 1.4em;
+    &::before {
+      content: ".2.";
+    }
+  }
+  h3 {
+    font-size: 1.2em;
+    &::before {
+      content: "..3.";
+    }
+  }
+  h4 {
+    font-size: 1.1em;
+    &::before {
+      content: "...4.";
+    }
+  }
+  h5 {
+    font-size: 1.1em;
+    &::before {
+      content: "....5.";
+    }
+  }
+  h6 {
+    font-size: 1.1em;
+    &::before {
+      content: "....6.";
+    }
+  }
+}
