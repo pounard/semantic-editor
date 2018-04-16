@@ -13,38 +13,26 @@ export const BlockQuote: Item = {
     tagName: "blockquote",
     rootAllowed: true,
     insertable: true,
-    build: target => {
-        const paragraph = document.createElement("p");
-        target.appendChild(paragraph);
-        paragraph.focus();
-    },
+    build: (target, editor) => target.appendChild(editor.document.createElement("p")),
 }
 
 export const OrderedList: Item = {
     tagName: "ol",
     rootAllowed: true,
     insertable: true,
-    build: target => {
-        const item = document.createElement("li");
-        target.appendChild(item);
-        item.focus();
-    },
+    build: (target, editor) => target.appendChild(editor.document.createElement("li")),
 }
 
 export const UnorderedList: Item = {
     tagName: "ul",
     rootAllowed: true,
     insertable: true,
-    build: target => {
-        const item = document.createElement("li");
-        target.appendChild(item);
-        item.focus();
-    },
+    build: (target, editor) => target.appendChild(editor.document.createElement("li")),
 }
 
 export const ListItem: Editable = {
     tagName: "li",
-    validParents: ["ul"],
+    validParents: ["ol", "ul"],
     editable: true,
     onEnterKeyPressCreateTag: "li",
 }
@@ -53,12 +41,9 @@ export const DefinitionList: Item = {
     tagName: "dl",
     rootAllowed: true,
     insertable: true,
-    build: target => {
-        const heading = document.createElement("dt");
-        const body = document.createElement("dd");
-        target.appendChild(heading);
-        target.appendChild(body);
-        heading.focus();
+    build: (target, editor) => {
+        target.appendChild(editor.document.createElement("dt"));
+        target.appendChild(editor.document.createElement("dd"));
     },
 }
 

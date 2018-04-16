@@ -1222,6 +1222,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var Edit = __webpack_require__(53);
+var Interface = __webpack_require__(54);
 var Items = __webpack_require__(48);
 var DEFAULT_CONFIGURATION_ITEMS = [Items.BlockQuote, Items.DefinitionBody, Items.DefinitionList, Items.DefinitionTitle, Items.Heading1, Items.Heading2, Items.Heading3, Items.Heading4, Items.Heading5, Items.Heading6, Items.ListItem, Items.OrderedList, Items.Paragraph, Items.UnorderedList];
 function editor(root, config) {
@@ -1241,18 +1242,53 @@ function editor(root, config) {
     }
     var editor = {
         config: config,
-        root: root
+        document: root.ownerDocument,
+        insertDialog: null,
+        root: root,
+        focusedElement: null
     };
-    for (var _i = 0, _a = config.items; _i < _a.length; _i++) {
-        var item = _a[_i];
-        var selectors = buildItemSelector(item);
-        for (var _b = 0, _c = root.querySelectorAll(selectors); _b < _c.length; _b++) {
-            var element = _c[_b];
-            initItem(element, item, editor);
-        }
+    Interface.buildAddButons(editor);
+    initAllItemsIn(editor);
+    var testElement = editor.document.querySelector("#insert-blockquote-test");
+    if (testElement) {
+        testElement.addEventListener("click", function (event) {
+            event.stopPropagation();
+            event.preventDefault();
+            insertItemAfter(Items.BlockQuote, editor, root.querySelector(":focus"));
+        });
     }
 }
 exports.editor = editor;
+function insertItemAfter(item, editor, current, doFocus) {
+    if (doFocus === void 0) {
+        doFocus = true;
+    }
+    if (!item.insertable) {
+        throw "item is not insertable: " + item;
+    }
+    var element = editor.document.createElement(item.tagName);
+    if (item.build) {
+        item.build(element, editor);
+    }
+    if (current && current.parentElement) {
+        current.parentElement.insertBefore(element, current.nextElementSibling);
+    } else if (editor.focusedElement && editor.focusedElement.parentElement) {
+        editor.focusedElement.parentElement.insertBefore(element, editor.focusedElement.nextElementSibling);
+    } else {
+        editor.root.appendChild(element);
+    }
+    initSingleItem(editor, element);
+    initAllItemsIn(editor, element);
+    if (element.isContentEditable) {
+        element.focus();
+    } else {
+        var editable = element.querySelector("[contenteditable=\"true\"]");
+        if (editable) {
+            editable.focus();
+        }
+    }
+}
+exports.insertItemAfter = insertItemAfter;
 function buildItemSelector(item) {
     var parts = [];
     var isValid = false;
@@ -1283,7 +1319,25 @@ function matches(element, selectors, editor) {
     }
     return false;
 }
-function initSingleItem(element, editor) {
+function initAllItemsIn(editor, context) {
+    if (!context) {
+        context = editor.root;
+    } else if (!editor.root.contains(context)) {
+        throw "you cannot initialize an item that is not in the editor: " + context;
+    }
+    for (var _i = 0, _a = editor.config.items; _i < _a.length; _i++) {
+        var item = _a[_i];
+        var selectors = buildItemSelector(item);
+        for (var _b = 0, _c = context.querySelectorAll(selectors); _b < _c.length; _b++) {
+            var element = _c[_b];
+            initItem(element, item, editor);
+        }
+    }
+}
+function initSingleItem(editor, element) {
+    if (!editor.root.contains(element)) {
+        throw "you cannot initialize an item that is not in the editor: " + element;
+    }
     for (var _i = 0, _a = editor.config.items; _i < _a.length; _i++) {
         var item = _a[_i];
         var selectors = buildItemSelector(item);
@@ -1295,12 +1349,30 @@ function initSingleItem(element, editor) {
     return false;
 }
 function initItem(element, item, editor) {
+    if (element.getAttribute("data-ready")) {
+        console.log("element is already initialized " + element);
+        return;
+    }
+    element.setAttribute("data-ready", "1");
     if (item.editable) {
         initEditableItem(element, item, editor);
     }
 }
 function initEditableItem(element, item, editor) {
     element.contentEditable = "true";
+    if (element.innerText.match(/^\s*$/)) {
+        element.innerText = "\n";
+    }
+    element.addEventListener("focus", function (event) {
+        editor.focusedElement = element;
+        if (element.parentElement) {
+            if (element.parentElement === editor.root) {
+                Interface.refreshAddButtons(editor);
+            } else {
+                Interface.refreshAddButtons(editor, element.parentElement);
+            }
+        }
+    });
     element.addEventListener("keypress", function (event) {
         if (!event.target) {
             return;
@@ -1312,12 +1384,12 @@ function initEditableItem(element, item, editor) {
             event.stopPropagation();
             event.preventDefault();
             if (item.onEnterKeyPress) {
-                item.onEnterKeyPress(element);
+                item.onEnterKeyPress(element, editor);
             } else {
                 var tagName = item.onEnterKeyPressCreateTag || "p";
-                var sibling = document.createElement(tagName);
+                var sibling = editor.document.createElement(tagName);
                 element.parentElement.insertBefore(sibling, element.nextElementSibling);
-                initSingleItem(sibling, editor);
+                initSingleItem(editor, sibling);
                 sibling.innerText = "\n";
                 sibling.focus();
             }
@@ -1328,8 +1400,26 @@ function initEditableItem(element, item, editor) {
             if (element.innerText === "" || element.innerText === "\n") {
                 event.stopPropagation();
                 event.preventDefault();
-                Edit.selectTabbablePrev(editor.root);
+                if (!Edit.selectTabbablePrev(editor.root)) {
+                    element.blur();
+                }
                 element.parentElement.removeChild(element);
+            }
+        } else if (event.keyCode === 46) {
+            if (!element.parentElement) {
+                throw "element is invalid (has no parent): " + element;
+            }
+            if (element.innerText === "" || element.innerText === "\n") {
+                event.stopPropagation();
+                event.preventDefault();
+                if (!Edit.selectTabbableNext(editor.root)) {
+                    element.blur();
+                }
+                element.parentElement.removeChild(element);
+            } else if (Edit.getCursorPosition(element).atEnd) {
+                event.stopPropagation();
+                event.preventDefault();
+                console.log("not implemented yet: I should move content from the next focusable element within here");
             }
         }
     });
@@ -1354,35 +1444,29 @@ exports.BlockQuote = {
     tagName: "blockquote",
     rootAllowed: true,
     insertable: true,
-    build: function (target) {
-        var paragraph = document.createElement("p");
-        target.appendChild(paragraph);
-        paragraph.focus();
+    build: function (target, editor) {
+        return target.appendChild(editor.document.createElement("p"));
     }
 };
 exports.OrderedList = {
     tagName: "ol",
     rootAllowed: true,
     insertable: true,
-    build: function (target) {
-        var item = document.createElement("li");
-        target.appendChild(item);
-        item.focus();
+    build: function (target, editor) {
+        return target.appendChild(editor.document.createElement("li"));
     }
 };
 exports.UnorderedList = {
     tagName: "ul",
     rootAllowed: true,
     insertable: true,
-    build: function (target) {
-        var item = document.createElement("li");
-        target.appendChild(item);
-        item.focus();
+    build: function (target, editor) {
+        return target.appendChild(editor.document.createElement("li"));
     }
 };
 exports.ListItem = {
     tagName: "li",
-    validParents: ["ul"],
+    validParents: ["ol", "ul"],
     editable: true,
     onEnterKeyPressCreateTag: "li"
 };
@@ -1390,12 +1474,9 @@ exports.DefinitionList = {
     tagName: "dl",
     rootAllowed: true,
     insertable: true,
-    build: function (target) {
-        var heading = document.createElement("dt");
-        var body = document.createElement("dd");
-        target.appendChild(heading);
-        target.appendChild(body);
-        heading.focus();
+    build: function (target, editor) {
+        target.appendChild(editor.document.createElement("dt"));
+        target.appendChild(editor.document.createElement("dd"));
     }
 };
 exports.DefinitionTitle = {
@@ -1459,24 +1540,65 @@ exports.Heading6 = {
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-function setEndOfContenteditable(contentEditableElement) {
+function changeCursorPosition(element, toStart) {
     var range, selection;
     if (document.createRange) {
         range = document.createRange();
-        range.selectNodeContents(contentEditableElement);
-        range.collapse(false);
+        range.selectNodeContents(element);
+        range.collapse(toStart);
         selection = window.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);
     } else if (document.selection) {
         range = document.body.createTextRange();
-        range.moveToElementText(contentEditableElement);
-        range.collapse(false);
+        range.moveToElementText(element);
+        range.collapse(toStart);
         range.select();
     }
 }
-exports.setEndOfContenteditable = setEndOfContenteditable;
-function selectTabbablePrev(context) {
+function changeCursorPositionToStart(element) {
+    changeCursorPosition(element, true);
+}
+exports.changeCursorPositionToStart = changeCursorPositionToStart;
+function changeCursorPositionToEnd(element) {
+    changeCursorPosition(element, false);
+}
+exports.changeCursorPositionToEnd = changeCursorPositionToEnd;
+function getCursorPosition(element) {
+    var _document = element.ownerDocument;
+    var _window = _document.defaultView || _document.parentWindow;
+    var selection;
+    var caretOffset = 0;
+    var endOffset = 0;
+    if (_window.getSelection) {
+        selection = _window.getSelection();
+        if (selection.rangeCount > 0) {
+            var range = _window.getSelection().getRangeAt(0);
+            var preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(element);
+            endOffset = preCaretRange.toString().length;
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+            caretOffset = preCaretRange.toString().length;
+        }
+    } else if ((selection = _document.selection) && selection.type != "Control") {
+        var textRange = selection.createRange();
+        var preCaretTextRange = _document.body.createTextRange();
+        preCaretTextRange.moveToElementText(element);
+        preCaretTextRange.setEndPoint("EndToEnd", textRange);
+        caretOffset = preCaretTextRange.text.length;
+    }
+    return {
+        position: caretOffset,
+        selectionLength: endOffset + 1,
+        atStart: caretOffset === 0,
+        atEnd: caretOffset === endOffset
+    };
+}
+exports.getCursorPosition = getCursorPosition;
+function selectTabbablePrev(context, wrapLookup) {
+    if (wrapLookup === void 0) {
+        wrapLookup = false;
+    }
     var current = context.querySelector(':focus');
     if (current) {
         var previous = null;
@@ -1486,27 +1608,123 @@ function selectTabbablePrev(context) {
             if (element === current) {
                 if (previous) {
                     previous.focus();
-                    setEndOfContenteditable(previous);
-                    return;
+                    changeCursorPositionToEnd(previous);
+                    return true;
                 } else {
                     fallbackOnNext = true;
                 }
             } else if (fallbackOnNext) {
                 element.focus();
-                setEndOfContenteditable(element);
-                return;
+                changeCursorPositionToEnd(element);
+                return true;
             } else {
                 previous = element;
             }
         }
     }
-    var first = context.querySelector("[contenteditable=\"true\"]");
-    if (first) {
-        first.focus();
-        setEndOfContenteditable(first);
+    if (wrapLookup) {
+        var first = context.querySelector("[contenteditable=\"true\"]");
+        if (first) {
+            first.focus();
+            changeCursorPositionToEnd(first);
+            return true;
+        }
     }
+    return false;
 }
 exports.selectTabbablePrev = selectTabbablePrev;
+function selectTabbableNext(context, wrapLookup) {
+    if (wrapLookup === void 0) {
+        wrapLookup = false;
+    }
+    var current = context.querySelector(':focus');
+    if (current) {
+        var isNext = false;
+        for (var _i = 0, _a = context.querySelectorAll("[contenteditable=\"true\"]"); _i < _a.length; _i++) {
+            var element = _a[_i];
+            if (isNext) {
+                element.focus();
+                changeCursorPositionToStart(element);
+                return true;
+            } else if (element === current) {
+                isNext = true;
+            }
+        }
+    }
+    if (wrapLookup) {
+        var first = context.querySelector("[contenteditable=\"true\"]");
+        if (first) {
+            first.focus();
+            changeCursorPositionToStart(first);
+            return true;
+        }
+    }
+    return false;
+}
+exports.selectTabbableNext = selectTabbableNext;
+
+/***/ }),
+/* 54 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Core = __webpack_require__(47);
+function buildAddButons(editor) {
+    var dialog = editor.document.createElement("div");
+    dialog.setAttribute("data-insert-dialog", "true");
+    dialog.setAttribute("class", "semantic-editor-insert");
+    var _loop_1 = function (item) {
+        if (item.insertable) {
+            var button_1 = editor.document.createElement("button");
+            button_1.setAttribute("data-insert-tag", item.tagName);
+            button_1.innerHTML = item.tagName;
+            dialog.appendChild(button_1);
+            button_1.addEventListener("click", function (event) {
+                event.stopPropagation();
+                event.preventDefault();
+                if (!button_1.disabled) {
+                    Core.insertItemAfter(item, editor);
+                }
+            });
+        }
+    };
+    for (var _i = 0, _a = editor.config.items; _i < _a.length; _i++) {
+        var item = _a[_i];
+        _loop_1(item);
+    }
+    editor.insertDialog = dialog;
+    editor.root.parentElement.insertBefore(dialog, editor.root);
+    return dialog;
+}
+exports.buildAddButons = buildAddButons;
+function refreshAddButtons(editor, target) {
+    if (editor.insertDialog) {
+        for (var _i = 0, _a = editor.config.items; _i < _a.length; _i++) {
+            var item = _a[_i];
+            var button = editor.insertDialog.querySelector("[data-insert-tag=\"" + item.tagName + "\"]");
+            if (button) {
+                button.disabled = true;
+                if (target) {
+                    if (item.validParents) {
+                        for (var _b = 0, _c = item.validParents; _b < _c.length; _b++) {
+                            var validParent = _c[_b];
+                            if (target.tagName === validParent) {
+                                button.disabled = false;
+                                continue;
+                            }
+                        }
+                    }
+                } else {
+                    button.disabled = !item.rootAllowed;
+                }
+            }
+        }
+    }
+}
+exports.refreshAddButtons = refreshAddButtons;
 
 /***/ })
 /******/ ]);

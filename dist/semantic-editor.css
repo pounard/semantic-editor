@@ -1,3 +1,9 @@
+.semantic-editor-insert {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
 .semantic-editor {
   box-sizing: border-box;
   border: 2px solid #ccc;
@@ -121,14 +127,34 @@
   background-color: #f6f6f6;
   padding: 0.5em 0.5em;
 }
-.semantic-editor figure {
-  border-color: #ccc;
-  background-color: #f6f6f6;
-  padding: 0.5em 0.5em;
+.semantic-editor dt {
+  padding-left: 2.5em;
+  position: relative;
+  font-weight: bold;
 }
-.semantic-editor figure > blockquote,
-.semantic-editor figure > footer,
-.semantic-editor figure > legend {
+.semantic-editor dt::before {
+  color: #ccc;
+  content: "title";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0.5em;
+  font-weight: normal;
+}
+.semantic-editor dd {
+  padding-left: 2.5em;
+  position: relative;
+}
+.semantic-editor dd::before {
+  color: #ccc;
+  content: "def.";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0.5em;
+  font-weight: normal;
+}
+.semantic-editor blockquote {
   border-color: #ccc;
   background-color: #f6f6f6;
   padding: 0.5em 0.5em;
@@ -144,6 +170,7 @@
   top: 50%;
   transform: translateY(-50%);
   left: 0.5em;
+  font-weight: normal;
 }
 .semantic-editor h1,
 .semantic-editor h2,
@@ -572,6 +599,7 @@
   top: 50%;
   transform: translateY(-50%);
   left: 0.5em;
+  font-weight: normal;
 }
 .semantic-editor h2 {
   font-size: 1.4em;
@@ -585,6 +613,7 @@
   top: 50%;
   transform: translateY(-50%);
   left: 0.5em;
+  font-weight: normal;
 }
 .semantic-editor h3 {
   font-size: 1.2em;
@@ -598,6 +627,7 @@
   top: 50%;
   transform: translateY(-50%);
   left: 0.5em;
+  font-weight: normal;
 }
 .semantic-editor h4 {
   font-size: 1.1em;
@@ -611,6 +641,7 @@
   top: 50%;
   transform: translateY(-50%);
   left: 0.5em;
+  font-weight: normal;
 }
 .semantic-editor h5 {
   font-size: 1.1em;
@@ -624,6 +655,7 @@
   top: 50%;
   transform: translateY(-50%);
   left: 0.5em;
+  font-weight: normal;
 }
 .semantic-editor h6 {
   font-size: 1.1em;
@@ -637,4 +669,5 @@
   top: 50%;
   transform: translateY(-50%);
   left: 0.5em;
+  font-weight: normal;
 }

@@ -25,16 +25,10 @@
 <body>
   <h1>Semantic editor</h1>
 
-  <div class="semantic-editor-insert">
-    <button>
-      Blockquote
-    </button>
-  </div>
-
   <div id="my-editor">
     <h1>What you see is NOT what you get...</h1>
 
-    <h2>... it's structure and semantics</h2>
+    <h2>... it's all about structure and semantics</h2>
 
     <p>
       Every people need a good text for the web, but no semantic editor really exist
@@ -57,35 +51,37 @@
 
     <h3>A blockquote</h3>
 
-    <figure>
-      <blockquote>
-        <p>
-          There is no better than adversity. Every defeat, every heartbreak, every loss, contains its own seed,
-          its own lesson on how to improve your performance the next time.
-        </p>
-      </blockquote>
-      <footer>
+    <blockquote>
+      <p>
+        There is no better than adversity. Every defeat, every heartbreak, every loss, contains its own seed,
+        its own lesson on how to improve your performance the next time.
+      </p>
+      <p>
         <cite>Malcom X.</cite>
-      </footer>
-    </figure>
+      </p>
+    </blockquote>
 
     <h1>Todo-list</h1>
 
     <ul>
-      <li>enter key in h* should switch to a p under,</li>
-      <li>enter key in p should create a new p under,</li>
-      <li>enter key in li should create a new li under,</li>
-      <li>enter key in dd should create a dt under,</li>
-      <li>enter key in dt should create a dd under,</li>
+      <li>provide transformation tool: from p to ul, from ul to ol, from ul to set of p, etc...</li>
+      <li>when hitting delete key on last offset, parent item content should be moved to this item content</li>
+      <li>when hitting backspace key on first offset, current text should be moved to parent element</li>
+      <li>when hitting enter key in the middle, current text after should be split and moved to a new next element</li>
+      <li><del>enter key in h* should switch to a p under,</del></li>
+      <li><del>enter key in p should create a new p under,</del></li>
+      <li><del>enter key in li should create a new li under,</del></li>
+      <li><del>enter key in dd should create a dt under,</del></li>
+      <li><del>enter key in dt should create a dd under,</del></li>
       <li>inline element should be underlined only, border have weird side effects,</li>
       <li><del>blockquote should behave like an editor by itself</del>,</li>
       <li>on hover and left click, popup with allowed nested element should be created,</li>
       <li>when typing or clicking on a non editable element, popup should go away,</li>
-      <li>set a column, on side, which displays pictograms of what's aside,</li>
+      <li><del>set a column, on side, which displays pictograms of what's aside,</del> <em>fixed by theming</em></li>
       <li>prevent focusing out the editor (optional, accessibility),</li>
       <li>title text (accessiblity) should tell what enters does in element,</li>
-      <li>what is possible to do should be a in ruleset, somehow,</li>
-      <li>make it pluggable (medias, embed code, iframes),</li>
+      <li><del>what is possible to do should be a in ruleset, somehow,</del></li>
+      <li><del>make it pluggable (medias, embed code, iframes),</del> <em>already partially is, more to come</em></li>
       <li>when selection, provide a bubble/popup that gives possible insertions/alterations,</li>
       <li>whichever happens, editor should always enforce typographic rules (no manual line feed, no empty paragraph).</li>
     </ul>

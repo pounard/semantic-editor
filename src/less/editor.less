@@ -52,7 +52,15 @@
     top: 50%;
     transform: translateY(-50%);
     left:0.5em;
+    font-weight: normal;
   }
+}
+
+.semantic-editor-insert {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .semantic-editor {
@@ -101,14 +109,17 @@
   dl {
     .locked-element();
   }
+  dt {
+    .left-icon("title", 2.5em);
+    font-weight: bold;
+  }
+  dd {
+    .left-icon("def.", 2.5em);
+  }
 
   /* Block elements */
-  figure {
+  blockquote {
     .locked-element();
-
-    > blockquote, > footer, > legend {
-      .locked-element();
-    }
   }
 
   p {

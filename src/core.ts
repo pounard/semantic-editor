@@ -1,5 +1,6 @@
 
 import * as Edit from "./edit";
+import * as Interface from "./interface";
 import * as Items from "./items";
 
 const DEFAULT_CONFIGURATION_ITEMS = [
@@ -22,12 +23,12 @@ const DEFAULT_CONFIGURATION_ITEMS = [
 /**
  * On editable enter keypress callback
  */
-export type EditableEnterKeypressCallback = (target: HTMLElement) => void;
+export type EditableEnterKeypressCallback = (target: HTMLElement, editor: Editor) => void;
 
 /**
  * On editable enter keypress callback
  */
-export type BuildCallback = (target: HTMLElement) => void;
+export type BuildCallback = (target: HTMLElement, editor: Editor) => void;
 
 /**
  * Item interface
@@ -57,6 +58,11 @@ export interface Item {
     readonly rootAllowed?: boolean;
 
     /**
+     * If set to true, this item will be considered as an editor itself
+     */
+    readonly canNestEditor?: boolean;
+
+    /**
      * Can this item be spawned by the user
      */
     readonly insertable?: boolean;
@@ -82,11 +88,6 @@ export interface Item {
  */
 export interface Editable extends Item {
     /**
-     * If set to true, this item will be considered as an editor itself
-     */
-    readonly canNestEditor?: boolean;
-
-    /**
      * If onKeyPress property is not set, this defines the element created
      * under the one being focused, if nothing specified, this will always
      * be a "p" tag.
@@ -111,9 +112,12 @@ export interface Configuration {
 /**
  * Represents an editor along its configuration
  */
-interface Editor {
-    config: Configuration,
-    root: HTMLElement,
+export interface Editor {
+    readonly config: Configuration,
+    readonly document: Document,
+    readonly root: HTMLElement,
+    insertDialog: HTMLElement | null,
+    focusedElement: HTMLElement | null,
 }
 
 /**
@@ -140,13 +144,63 @@ export function editor(root: HTMLElement, config?: Configuration): void {
 
     const editor: Editor = {
         config: config,
+        document: root.ownerDocument,
+        insertDialog: null,
         root: root,
+        focusedElement: null,
     };
 
-    for (let item of config.items) {
-        const selectors = buildItemSelector(item);
-        for (let element of (<HTMLElement[]><any>root.querySelectorAll(selectors))) {
-            initItem(element, item, editor);
+    Interface.buildAddButons(editor);
+
+    initAllItemsIn(editor);
+
+    const testElement = editor.document.querySelector("#insert-blockquote-test");
+    if (testElement) {
+        testElement.addEventListener("click", (event: Event) => {
+            event.stopPropagation();
+            event.preventDefault();
+
+            insertItemAfter(Items.BlockQuote, editor, <HTMLElement>root.querySelector(":focus"));
+        });
+    }
+}
+
+/**
+ * Build and insert new item structure in the given editor after the given
+ * current element, fallback on append if there is no current selection.
+ */
+export function insertItemAfter(item: Item, editor: Editor, current?: HTMLElement, doFocus: boolean = true): void {
+
+    // Create rightfully the item structure
+    if (!item.insertable) {
+        throw `item is not insertable: ${item}`;
+    }
+
+    const element = editor.document.createElement(item.tagName);
+    if (item.build) {
+        item.build(element, editor);
+    }
+
+    if (current && current.parentElement) {
+        current.parentElement.insertBefore(element, current.nextElementSibling);
+    } else if (editor.focusedElement && editor.focusedElement.parentElement) {
+        editor.focusedElement.parentElement.insertBefore(element, editor.focusedElement.nextElementSibling);
+    } else {
+        // insert at root
+        editor.root.appendChild(element);
+    }
+
+    initSingleItem(editor, element);
+    initAllItemsIn(editor, element);
+
+    // Focus the very first one, seems legit to position the user
+    // on the first (and most oftenly will be the only one).
+    if (element.isContentEditable) {
+        element.focus();
+    } else {
+        const editable = element.querySelector(`[contenteditable="true"]`);
+        if (editable) {
+            (<HTMLElement>editable).focus();
         }
     }
 }
@@ -194,10 +248,31 @@ function matches(element: HTMLElement, selectors: string, editor: Editor): boole
 }
 
 /**
+ * Traverse all enabled items from the editor config, respectively build their
+ * selectors and initialize the elements found in the editor context.
+ */
+function initAllItemsIn(editor: Editor, context?: HTMLElement) {
+    if (!context) {
+        context = editor.root;
+    } else if (!editor.root.contains(context)) {
+        throw `you cannot initialize an item that is not in the editor: ${context}`;
+    }
+    for (let item of editor.config.items) {
+        const selectors = buildItemSelector(item);
+        for (let element of (<HTMLElement[]><any>context.querySelectorAll(selectors))) {
+            initItem(element, item, editor);
+        }
+    }
+}
+
+/**
  * Lookup over allowed item types, and initialize the item if a matching item
  * type exists.
  */
-function initSingleItem(element: HTMLElement, editor: Editor): boolean {
+function initSingleItem(editor: Editor, element: HTMLElement): boolean {
+    if (!editor.root.contains(element)) {
+        throw `you cannot initialize an item that is not in the editor: ${element}`;
+    }
     for (let item of editor.config.items) {
         const selectors = buildItemSelector(item);
         if (matches(element, selectors, editor)) {
@@ -212,6 +287,13 @@ function initSingleItem(element: HTMLElement, editor: Editor): boolean {
  * Initialize a single item.
  */
 function initItem(element: HTMLElement, item: Item, editor: Editor): void {
+    if (element.getAttribute("data-ready")) {
+        // This should NOT happen, it means a selector is too wide
+        console.log(`element is already initialized ${element}`);
+        return;
+    }
+    element.setAttribute("data-ready", "1");
+
     if (item.editable) {
         // Since that all properties on the Editable interface are optional
         // it's safe to cast the Item as Editable.
@@ -225,6 +307,25 @@ function initItem(element: HTMLElement, item: Item, editor: Editor): void {
 function initEditableItem(element: HTMLElement, item: Editable, editor: Editor) {
     // Make item editable
     element.contentEditable = "true";
+
+    // Force item to have at least an empty space: this forces some browsers
+    // to correctly display the empty element, especially when the element
+    // size is directly dependent from the font size
+    if (element.innerText.match(/^\s*$/)) {
+        element.innerText = "\n";
+    }
+
+    // On focus, the element should be set as the latest editor selected element
+    element.addEventListener("focus", (event: Event) => {
+        editor.focusedElement = element;
+        if (element.parentElement) {
+            if (element.parentElement === editor.root) {
+                Interface.refreshAddButtons(editor);
+            } else {
+                Interface.refreshAddButtons(editor, element.parentElement);
+            }
+        }
+    });
 
     // Handle keypress
     element.addEventListener("keypress", (event: KeyboardEvent) => {
@@ -241,21 +342,21 @@ function initEditableItem(element: HTMLElement, item: Editable, editor: Editor) 
             event.preventDefault();
 
             if (item.onEnterKeyPress) {
-                item.onEnterKeyPress(element);
+                item.onEnterKeyPress(element, editor);
             } else {
                 // Default behavior is document within the Editables interface: per
                 // default we just create a new element right after, which is
                 // either p, or any tag specified by the onEnterKeyPressCreateTag
                 // property
                 const tagName: string = item.onEnterKeyPressCreateTag || "p";
-                const sibling = document.createElement(tagName);
+                const sibling = editor.document.createElement(tagName);
 
                 // Insert element at the right position
                 element.parentElement.insertBefore(sibling, element.nextElementSibling);
 
                 // In the end, initialize it, it must be in the right DOM position
                 // to be correctly initialized
-                initSingleItem(sibling, editor);
+                initSingleItem(editor, sibling);
 
                 // A void space will force the item to reserve space for text
                 sibling.innerText = "\n";
@@ -268,9 +369,6 @@ function initEditableItem(element: HTMLElement, item: Editable, editor: Editor) 
                 throw `element is invalid (has no parent): ${element}`;
             }
 
-            // @todo
-            //  - It should not remove the item if it's the last sibling
-            //  - OR it could, but it must deal with locked parents too
             if (element.innerText === "" || element.innerText === "\n") {
                 event.stopPropagation();
                 event.preventDefault();
@@ -278,9 +376,44 @@ function initEditableItem(element: HTMLElement, item: Editable, editor: Editor) 
                 // Simulate "Shift+Tab" on the element to focus the parent in
                 // tabindex, ensuring the user may continue to edit without the
                 // mouse.
-                Edit.selectTabbablePrev(editor.root);
+                if (!Edit.selectTabbablePrev(editor.root)) {
+                    // Focus out to prevent editor from being wiped out by serial backslashers.
+                    element.blur();
+                }
+
+                // @todo
+                //  - It should not remove the item if it's the last sibling
+                //  - OR it could, but it must deal with locked parents too
+                element.parentElement.removeChild(element);
+            }
+        } else if (event.keyCode === 46) { // Delete
+            if (!element.parentElement) {
+                throw `element is invalid (has no parent): ${element}`;
+            }
+
+            if (element.innerText === "" || element.innerText === "\n") {
+                event.stopPropagation();
+                event.preventDefault();
+
+                // Simulate "Shift+Tab" on the element to focus the parent in
+                // tabindex, ensuring the user may continue to edit without the
+                // mouse.
+                if (!Edit.selectTabbableNext(editor.root)) {
+                    // Focus out to prevent editor from being wiped out by serial deleters.
+                    element.blur();
+                }
+
+                // @todo
+                //  - It should not remove the item if it's the last sibling
+                //  - OR it could, but it must deal with locked parents too
 
                 element.parentElement.removeChild(element);
+            } else if (Edit.getCursorPosition(element).atEnd) {
+                event.stopPropagation();
+                event.preventDefault();
+
+                // @todo
+                console.log("not implemented yet: I should move content from the next focusable element within here");
             }
         }
     });
