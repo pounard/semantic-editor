@@ -11,8 +11,8 @@
 
   border: 1px dotted;
   border-color: @semantic-color-inline-border;
-  background-color: @semantic-color-editable-background;
-  &:hover, &:focus {
+  background-color: transparent;
+  &:focus {
     border: 1px solid;
   }
 
@@ -39,6 +39,19 @@
     &, > a, > em, > cite, > strong, > del {
       .inline-element();
     }
+  }
+}
+
+.left-icon(@content, @padding: 1.5em) {
+  padding-left: @padding;
+  position: relative;
+  &::before {
+    color: @semantic-editor-hint-color;
+    content: @content;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left:0.5em;
   }
 }
 
@@ -98,6 +111,10 @@
     }
   }
 
+  p {
+    .left-icon("¶");
+  }
+
   /* Headings */
   h1,  h2,  h3,  h4,  h5,  h6 {
     .editable-element();
@@ -107,45 +124,32 @@
     padding: 0.5em 0.5em;
 
     &::before {
-      content: "H.0";
       color: @semantic-editor-hint-color;
       margin-right: 1em;
     }
   }
   h1 {
     font-size: 1.6em;
-    &::before {
-      content: "1.";
-    }
+    .left-icon("H1", 2.5em);
   }
   h2 {
     font-size: 1.4em;
-    &::before {
-      content: ".2.";
-    }
+    .left-icon("H2", 2.5em);
   }
   h3 {
     font-size: 1.2em;
-    &::before {
-      content: "..3.";
-    }
+    .left-icon("H3", 2.5em);
   }
   h4 {
     font-size: 1.1em;
-    &::before {
-      content: "...4.";
-    }
+    .left-icon("H4", 2.5em);
   }
   h5 {
     font-size: 1.1em;
-    &::before {
-      content: "....5.";
-    }
+    .left-icon("H5", 2.5em);
   }
   h6 {
     font-size: 1.1em;
-    &::before {
-      content: "....6.";
-    }
+    .left-icon("H6", 2.5em);
   }
 }

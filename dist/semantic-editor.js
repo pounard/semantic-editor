@@ -1221,8 +1221,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var Edit = __webpack_require__(53);
 var Items = __webpack_require__(48);
-var DEFAULT_CONFIGURATION_ITEMS = [Items.Paragraph, Items.BlockQuote, Items.ListItem, Items.DictTitle, Items.DictDefinition, Items.Heading1, Items.Heading2, Items.Heading3, Items.Heading4, Items.Heading5, Items.Heading6];
+var DEFAULT_CONFIGURATION_ITEMS = [Items.BlockQuote, Items.DefinitionBody, Items.DefinitionList, Items.DefinitionTitle, Items.Heading1, Items.Heading2, Items.Heading3, Items.Heading4, Items.Heading5, Items.Heading6, Items.ListItem, Items.OrderedList, Items.Paragraph, Items.UnorderedList];
 function editor(root, config) {
     if (!root.querySelectorAll) {
         console.log(root + " is not a valid HtmlElement");
@@ -1294,28 +1295,42 @@ function initSingleItem(element, editor) {
     return false;
 }
 function initItem(element, item, editor) {
+    if (item.editable) {
+        initEditableItem(element, item, editor);
+    }
+}
+function initEditableItem(element, item, editor) {
     element.contentEditable = "true";
     element.addEventListener("keypress", function (event) {
         if (!event.target) {
             return;
         }
-        if (event.keyCode !== 13) {
-            return;
-        }
-        if (!element.parentElement) {
-            throw "element is invalid (has no parent): " + element;
-        }
-        event.stopPropagation();
-        event.preventDefault();
-        if (item.onEnterKeyPress) {
-            item.onEnterKeyPress(element);
-        } else {
-            var tagName = item.onEnterKeyPressCreateTag || "p";
-            var sibling = document.createElement(tagName);
-            element.parentElement.insertBefore(sibling, element.nextElementSibling);
-            initSingleItem(sibling, editor);
-            sibling.innerText = "\n";
-            sibling.focus();
+        if (event.keyCode === 13) {
+            if (!element.parentElement) {
+                throw "element is invalid (has no parent): " + element;
+            }
+            event.stopPropagation();
+            event.preventDefault();
+            if (item.onEnterKeyPress) {
+                item.onEnterKeyPress(element);
+            } else {
+                var tagName = item.onEnterKeyPressCreateTag || "p";
+                var sibling = document.createElement(tagName);
+                element.parentElement.insertBefore(sibling, element.nextElementSibling);
+                initSingleItem(sibling, editor);
+                sibling.innerText = "\n";
+                sibling.focus();
+            }
+        } else if (event.keyCode === 8) {
+            if (!element.parentElement) {
+                throw "element is invalid (has no parent): " + element;
+            }
+            if (element.innerText === "" || element.innerText === "\n") {
+                event.stopPropagation();
+                event.preventDefault();
+                Edit.selectTabbablePrev(editor.root);
+                element.parentElement.removeChild(element);
+            }
         }
     });
 }
@@ -1331,52 +1346,167 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Paragraph = {
     tagName: "p",
     validParents: ["li"],
-    rootAllowed: true
+    rootAllowed: true,
+    editable: true,
+    insertable: true
 };
 exports.BlockQuote = {
     tagName: "blockquote",
     rootAllowed: true,
-    canNestEditor: true
+    insertable: true,
+    build: function (target) {
+        var paragraph = document.createElement("p");
+        target.appendChild(paragraph);
+        paragraph.focus();
+    }
+};
+exports.OrderedList = {
+    tagName: "ol",
+    rootAllowed: true,
+    insertable: true,
+    build: function (target) {
+        var item = document.createElement("li");
+        target.appendChild(item);
+        item.focus();
+    }
+};
+exports.UnorderedList = {
+    tagName: "ul",
+    rootAllowed: true,
+    insertable: true,
+    build: function (target) {
+        var item = document.createElement("li");
+        target.appendChild(item);
+        item.focus();
+    }
 };
 exports.ListItem = {
     tagName: "li",
     validParents: ["ul"],
+    editable: true,
     onEnterKeyPressCreateTag: "li"
 };
-exports.DictTitle = {
+exports.DefinitionList = {
+    tagName: "dl",
+    rootAllowed: true,
+    insertable: true,
+    build: function (target) {
+        var heading = document.createElement("dt");
+        var body = document.createElement("dd");
+        target.appendChild(heading);
+        target.appendChild(body);
+        heading.focus();
+    }
+};
+exports.DefinitionTitle = {
     tagName: "dt",
     validParents: ["dl"],
+    editable: true,
     onEnterKeyPressCreateTag: "dd"
 };
-exports.DictDefinition = {
+exports.DefinitionBody = {
     tagName: "dd",
     validParents: ["dl"],
+    editable: true,
     onEnterKeyPressCreateTag: "dt"
 };
 exports.Heading1 = {
     tagName: "h1",
-    rootAllowed: true
+    rootAllowed: true,
+    insertable: true,
+    editable: true
 };
 exports.Heading2 = {
     tagName: "h2",
-    rootAllowed: true
+    rootAllowed: true,
+    insertable: true,
+    editable: true
 };
 exports.Heading3 = {
     tagName: "h3",
-    rootAllowed: true
+    rootAllowed: true,
+    insertable: true,
+    editable: true
 };
 exports.Heading4 = {
     tagName: "h4",
-    rootAllowed: true
+    rootAllowed: true,
+    insertable: true,
+    editable: true
 };
 exports.Heading5 = {
     tagName: "h5",
-    rootAllowed: true
+    rootAllowed: true,
+    insertable: true,
+    editable: true
 };
 exports.Heading6 = {
     tagName: "h6",
-    rootAllowed: true
+    rootAllowed: true,
+    insertable: true,
+    editable: true
 };
+
+/***/ }),
+/* 49 */,
+/* 50 */,
+/* 51 */,
+/* 52 */,
+/* 53 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function setEndOfContenteditable(contentEditableElement) {
+    var range, selection;
+    if (document.createRange) {
+        range = document.createRange();
+        range.selectNodeContents(contentEditableElement);
+        range.collapse(false);
+        selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+    } else if (document.selection) {
+        range = document.body.createTextRange();
+        range.moveToElementText(contentEditableElement);
+        range.collapse(false);
+        range.select();
+    }
+}
+exports.setEndOfContenteditable = setEndOfContenteditable;
+function selectTabbablePrev(context) {
+    var current = context.querySelector(':focus');
+    if (current) {
+        var previous = null;
+        var fallbackOnNext = false;
+        for (var _i = 0, _a = context.querySelectorAll("[contenteditable=\"true\"]"); _i < _a.length; _i++) {
+            var element = _a[_i];
+            if (element === current) {
+                if (previous) {
+                    previous.focus();
+                    setEndOfContenteditable(previous);
+                    return;
+                } else {
+                    fallbackOnNext = true;
+                }
+            } else if (fallbackOnNext) {
+                element.focus();
+                setEndOfContenteditable(element);
+                return;
+            } else {
+                previous = element;
+            }
+        }
+    }
+    var first = context.querySelector("[contenteditable=\"true\"]");
+    if (first) {
+        first.focus();
+        setEndOfContenteditable(first);
+    }
+}
+exports.selectTabbablePrev = selectTabbablePrev;
 
 /***/ })
 /******/ ]);

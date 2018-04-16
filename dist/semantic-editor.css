@@ -66,40 +66,10 @@
   display: inline-block;
   border: 1px dotted;
   border-color: red;
-  background-color: white;
+  background-color: transparent;
   padding: 0;
   margin: 0;
 }
-.semantic-editor *[contenteditable="true"] > a:hover,
-.semantic-editor *[contenteditable="true"] > em:hover,
-.semantic-editor *[contenteditable="true"] > cite:hover,
-.semantic-editor *[contenteditable="true"] > strong:hover,
-.semantic-editor *[contenteditable="true"] > del:hover,
-.semantic-editor *[contenteditable="true"] > a > a:hover,
-.semantic-editor *[contenteditable="true"] > em > a:hover,
-.semantic-editor *[contenteditable="true"] > cite > a:hover,
-.semantic-editor *[contenteditable="true"] > strong > a:hover,
-.semantic-editor *[contenteditable="true"] > del > a:hover,
-.semantic-editor *[contenteditable="true"] > a > em:hover,
-.semantic-editor *[contenteditable="true"] > em > em:hover,
-.semantic-editor *[contenteditable="true"] > cite > em:hover,
-.semantic-editor *[contenteditable="true"] > strong > em:hover,
-.semantic-editor *[contenteditable="true"] > del > em:hover,
-.semantic-editor *[contenteditable="true"] > a > cite:hover,
-.semantic-editor *[contenteditable="true"] > em > cite:hover,
-.semantic-editor *[contenteditable="true"] > cite > cite:hover,
-.semantic-editor *[contenteditable="true"] > strong > cite:hover,
-.semantic-editor *[contenteditable="true"] > del > cite:hover,
-.semantic-editor *[contenteditable="true"] > a > strong:hover,
-.semantic-editor *[contenteditable="true"] > em > strong:hover,
-.semantic-editor *[contenteditable="true"] > cite > strong:hover,
-.semantic-editor *[contenteditable="true"] > strong > strong:hover,
-.semantic-editor *[contenteditable="true"] > del > strong:hover,
-.semantic-editor *[contenteditable="true"] > a > del:hover,
-.semantic-editor *[contenteditable="true"] > em > del:hover,
-.semantic-editor *[contenteditable="true"] > cite > del:hover,
-.semantic-editor *[contenteditable="true"] > strong > del:hover,
-.semantic-editor *[contenteditable="true"] > del > del:hover,
 .semantic-editor *[contenteditable="true"] > a:focus,
 .semantic-editor *[contenteditable="true"] > em:focus,
 .semantic-editor *[contenteditable="true"] > cite:focus,
@@ -162,6 +132,18 @@
   border-color: #ccc;
   background-color: #f6f6f6;
   padding: 0.5em 0.5em;
+}
+.semantic-editor p {
+  padding-left: 1.5em;
+  position: relative;
+}
+.semantic-editor p::before {
+  color: #ccc;
+  content: "\B6";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0.5em;
 }
 .semantic-editor h1,
 .semantic-editor h2,
@@ -383,190 +365,10 @@
   display: inline-block;
   border: 1px dotted;
   border-color: red;
-  background-color: white;
+  background-color: transparent;
   padding: 0;
   margin: 0;
 }
-.semantic-editor h1 > a:hover,
-.semantic-editor h2 > a:hover,
-.semantic-editor h3 > a:hover,
-.semantic-editor h4 > a:hover,
-.semantic-editor h5 > a:hover,
-.semantic-editor h6 > a:hover,
-.semantic-editor h1 > em:hover,
-.semantic-editor h2 > em:hover,
-.semantic-editor h3 > em:hover,
-.semantic-editor h4 > em:hover,
-.semantic-editor h5 > em:hover,
-.semantic-editor h6 > em:hover,
-.semantic-editor h1 > cite:hover,
-.semantic-editor h2 > cite:hover,
-.semantic-editor h3 > cite:hover,
-.semantic-editor h4 > cite:hover,
-.semantic-editor h5 > cite:hover,
-.semantic-editor h6 > cite:hover,
-.semantic-editor h1 > strong:hover,
-.semantic-editor h2 > strong:hover,
-.semantic-editor h3 > strong:hover,
-.semantic-editor h4 > strong:hover,
-.semantic-editor h5 > strong:hover,
-.semantic-editor h6 > strong:hover,
-.semantic-editor h1 > del:hover,
-.semantic-editor h2 > del:hover,
-.semantic-editor h3 > del:hover,
-.semantic-editor h4 > del:hover,
-.semantic-editor h5 > del:hover,
-.semantic-editor h6 > del:hover,
-.semantic-editor h1 > a > a:hover,
-.semantic-editor h2 > a > a:hover,
-.semantic-editor h3 > a > a:hover,
-.semantic-editor h4 > a > a:hover,
-.semantic-editor h5 > a > a:hover,
-.semantic-editor h6 > a > a:hover,
-.semantic-editor h1 > em > a:hover,
-.semantic-editor h2 > em > a:hover,
-.semantic-editor h3 > em > a:hover,
-.semantic-editor h4 > em > a:hover,
-.semantic-editor h5 > em > a:hover,
-.semantic-editor h6 > em > a:hover,
-.semantic-editor h1 > cite > a:hover,
-.semantic-editor h2 > cite > a:hover,
-.semantic-editor h3 > cite > a:hover,
-.semantic-editor h4 > cite > a:hover,
-.semantic-editor h5 > cite > a:hover,
-.semantic-editor h6 > cite > a:hover,
-.semantic-editor h1 > strong > a:hover,
-.semantic-editor h2 > strong > a:hover,
-.semantic-editor h3 > strong > a:hover,
-.semantic-editor h4 > strong > a:hover,
-.semantic-editor h5 > strong > a:hover,
-.semantic-editor h6 > strong > a:hover,
-.semantic-editor h1 > del > a:hover,
-.semantic-editor h2 > del > a:hover,
-.semantic-editor h3 > del > a:hover,
-.semantic-editor h4 > del > a:hover,
-.semantic-editor h5 > del > a:hover,
-.semantic-editor h6 > del > a:hover,
-.semantic-editor h1 > a > em:hover,
-.semantic-editor h2 > a > em:hover,
-.semantic-editor h3 > a > em:hover,
-.semantic-editor h4 > a > em:hover,
-.semantic-editor h5 > a > em:hover,
-.semantic-editor h6 > a > em:hover,
-.semantic-editor h1 > em > em:hover,
-.semantic-editor h2 > em > em:hover,
-.semantic-editor h3 > em > em:hover,
-.semantic-editor h4 > em > em:hover,
-.semantic-editor h5 > em > em:hover,
-.semantic-editor h6 > em > em:hover,
-.semantic-editor h1 > cite > em:hover,
-.semantic-editor h2 > cite > em:hover,
-.semantic-editor h3 > cite > em:hover,
-.semantic-editor h4 > cite > em:hover,
-.semantic-editor h5 > cite > em:hover,
-.semantic-editor h6 > cite > em:hover,
-.semantic-editor h1 > strong > em:hover,
-.semantic-editor h2 > strong > em:hover,
-.semantic-editor h3 > strong > em:hover,
-.semantic-editor h4 > strong > em:hover,
-.semantic-editor h5 > strong > em:hover,
-.semantic-editor h6 > strong > em:hover,
-.semantic-editor h1 > del > em:hover,
-.semantic-editor h2 > del > em:hover,
-.semantic-editor h3 > del > em:hover,
-.semantic-editor h4 > del > em:hover,
-.semantic-editor h5 > del > em:hover,
-.semantic-editor h6 > del > em:hover,
-.semantic-editor h1 > a > cite:hover,
-.semantic-editor h2 > a > cite:hover,
-.semantic-editor h3 > a > cite:hover,
-.semantic-editor h4 > a > cite:hover,
-.semantic-editor h5 > a > cite:hover,
-.semantic-editor h6 > a > cite:hover,
-.semantic-editor h1 > em > cite:hover,
-.semantic-editor h2 > em > cite:hover,
-.semantic-editor h3 > em > cite:hover,
-.semantic-editor h4 > em > cite:hover,
-.semantic-editor h5 > em > cite:hover,
-.semantic-editor h6 > em > cite:hover,
-.semantic-editor h1 > cite > cite:hover,
-.semantic-editor h2 > cite > cite:hover,
-.semantic-editor h3 > cite > cite:hover,
-.semantic-editor h4 > cite > cite:hover,
-.semantic-editor h5 > cite > cite:hover,
-.semantic-editor h6 > cite > cite:hover,
-.semantic-editor h1 > strong > cite:hover,
-.semantic-editor h2 > strong > cite:hover,
-.semantic-editor h3 > strong > cite:hover,
-.semantic-editor h4 > strong > cite:hover,
-.semantic-editor h5 > strong > cite:hover,
-.semantic-editor h6 > strong > cite:hover,
-.semantic-editor h1 > del > cite:hover,
-.semantic-editor h2 > del > cite:hover,
-.semantic-editor h3 > del > cite:hover,
-.semantic-editor h4 > del > cite:hover,
-.semantic-editor h5 > del > cite:hover,
-.semantic-editor h6 > del > cite:hover,
-.semantic-editor h1 > a > strong:hover,
-.semantic-editor h2 > a > strong:hover,
-.semantic-editor h3 > a > strong:hover,
-.semantic-editor h4 > a > strong:hover,
-.semantic-editor h5 > a > strong:hover,
-.semantic-editor h6 > a > strong:hover,
-.semantic-editor h1 > em > strong:hover,
-.semantic-editor h2 > em > strong:hover,
-.semantic-editor h3 > em > strong:hover,
-.semantic-editor h4 > em > strong:hover,
-.semantic-editor h5 > em > strong:hover,
-.semantic-editor h6 > em > strong:hover,
-.semantic-editor h1 > cite > strong:hover,
-.semantic-editor h2 > cite > strong:hover,
-.semantic-editor h3 > cite > strong:hover,
-.semantic-editor h4 > cite > strong:hover,
-.semantic-editor h5 > cite > strong:hover,
-.semantic-editor h6 > cite > strong:hover,
-.semantic-editor h1 > strong > strong:hover,
-.semantic-editor h2 > strong > strong:hover,
-.semantic-editor h3 > strong > strong:hover,
-.semantic-editor h4 > strong > strong:hover,
-.semantic-editor h5 > strong > strong:hover,
-.semantic-editor h6 > strong > strong:hover,
-.semantic-editor h1 > del > strong:hover,
-.semantic-editor h2 > del > strong:hover,
-.semantic-editor h3 > del > strong:hover,
-.semantic-editor h4 > del > strong:hover,
-.semantic-editor h5 > del > strong:hover,
-.semantic-editor h6 > del > strong:hover,
-.semantic-editor h1 > a > del:hover,
-.semantic-editor h2 > a > del:hover,
-.semantic-editor h3 > a > del:hover,
-.semantic-editor h4 > a > del:hover,
-.semantic-editor h5 > a > del:hover,
-.semantic-editor h6 > a > del:hover,
-.semantic-editor h1 > em > del:hover,
-.semantic-editor h2 > em > del:hover,
-.semantic-editor h3 > em > del:hover,
-.semantic-editor h4 > em > del:hover,
-.semantic-editor h5 > em > del:hover,
-.semantic-editor h6 > em > del:hover,
-.semantic-editor h1 > cite > del:hover,
-.semantic-editor h2 > cite > del:hover,
-.semantic-editor h3 > cite > del:hover,
-.semantic-editor h4 > cite > del:hover,
-.semantic-editor h5 > cite > del:hover,
-.semantic-editor h6 > cite > del:hover,
-.semantic-editor h1 > strong > del:hover,
-.semantic-editor h2 > strong > del:hover,
-.semantic-editor h3 > strong > del:hover,
-.semantic-editor h4 > strong > del:hover,
-.semantic-editor h5 > strong > del:hover,
-.semantic-editor h6 > strong > del:hover,
-.semantic-editor h1 > del > del:hover,
-.semantic-editor h2 > del > del:hover,
-.semantic-editor h3 > del > del:hover,
-.semantic-editor h4 > del > del:hover,
-.semantic-editor h5 > del > del:hover,
-.semantic-editor h6 > del > del:hover,
 .semantic-editor h1 > a:focus,
 .semantic-editor h2 > a:focus,
 .semantic-editor h3 > a:focus,
@@ -755,43 +557,84 @@
 .semantic-editor h4::before,
 .semantic-editor h5::before,
 .semantic-editor h6::before {
-  content: "H.0";
   color: #ccc;
   margin-right: 1em;
 }
 .semantic-editor h1 {
   font-size: 1.6em;
+  padding-left: 2.5em;
+  position: relative;
 }
 .semantic-editor h1::before {
-  content: "1.";
+  color: #ccc;
+  content: "H1";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0.5em;
 }
 .semantic-editor h2 {
   font-size: 1.4em;
+  padding-left: 2.5em;
+  position: relative;
 }
 .semantic-editor h2::before {
-  content: ".2.";
+  color: #ccc;
+  content: "H2";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0.5em;
 }
 .semantic-editor h3 {
   font-size: 1.2em;
+  padding-left: 2.5em;
+  position: relative;
 }
 .semantic-editor h3::before {
-  content: "..3.";
+  color: #ccc;
+  content: "H3";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0.5em;
 }
 .semantic-editor h4 {
   font-size: 1.1em;
+  padding-left: 2.5em;
+  position: relative;
 }
 .semantic-editor h4::before {
-  content: "...4.";
+  color: #ccc;
+  content: "H4";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0.5em;
 }
 .semantic-editor h5 {
   font-size: 1.1em;
+  padding-left: 2.5em;
+  position: relative;
 }
 .semantic-editor h5::before {
-  content: "....5.";
+  color: #ccc;
+  content: "H5";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0.5em;
 }
 .semantic-editor h6 {
   font-size: 1.1em;
+  padding-left: 2.5em;
+  position: relative;
 }
 .semantic-editor h6::before {
-  content: "....6.";
+  color: #ccc;
+  content: "H6";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0.5em;
 }

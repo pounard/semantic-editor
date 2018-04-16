@@ -1,27 +1,36 @@
 
+import * as Edit from "./edit";
 import * as Items from "./items";
 
 const DEFAULT_CONFIGURATION_ITEMS = [
-    Items.Paragraph,
     Items.BlockQuote,
-    Items.ListItem,
-    Items.DictTitle,
-    Items.DictDefinition,
+    Items.DefinitionBody,
+    Items.DefinitionList,
+    Items.DefinitionTitle,
     Items.Heading1,
     Items.Heading2,
     Items.Heading3,
     Items.Heading4,
     Items.Heading5,
     Items.Heading6,
+    Items.ListItem,
+    Items.OrderedList,
+    Items.Paragraph,
+    Items.UnorderedList,
 ];
 
 /**
- * On keypress item callback
+ * On editable enter keypress callback
  */
-export type ItemEnterKeypressCallback = (target: HTMLElement) => void;
+export type EditableEnterKeypressCallback = (target: HTMLElement) => void;
 
 /**
- * Editable item interface
+ * On editable enter keypress callback
+ */
+export type BuildCallback = (target: HTMLElement) => void;
+
+/**
+ * Item interface
  */
 export interface Item {
     /**
@@ -48,6 +57,31 @@ export interface Item {
     readonly rootAllowed?: boolean;
 
     /**
+     * Can this item be spawned by the user
+     */
+    readonly insertable?: boolean;
+
+    /**
+     * Build callback, given target item is an empty element whose tag name
+     * matches the tagName property. If you do not implement it, the tag
+     * will be left empty
+     */
+    readonly build?: BuildCallback;
+
+    /**
+     * Is item editable, if set to true you MUST implement the Editable
+     * interface as well.
+     *
+     * @todo this is rather ugly, a better way should be found
+     */
+    editable?: boolean;
+}
+
+/**
+ * Editable item interface
+ */
+export interface Editable extends Item {
+    /**
      * If set to true, this item will be considered as an editor itself
      */
     readonly canNestEditor?: boolean;
@@ -64,15 +98,7 @@ export interface Item {
      * create a new default element and focus onto it. Default element tag
      * name will be the onKeyPressCreateTag property.
      */
-    readonly onEnterKeyPress?: ItemEnterKeypressCallback;
-}
-
-/**
- * Represents an editor along its configuration
- */
-export interface Editor {
-    config: Configuration,
-    root: HTMLElement,
+    readonly onEnterKeyPress?: EditableEnterKeypressCallback;
 }
 
 /**
@@ -80,6 +106,14 @@ export interface Editor {
  */
 export interface Configuration {
     items: Item[],
+}
+
+/**
+ * Represents an editor along its configuration
+ */
+interface Editor {
+    config: Configuration,
+    root: HTMLElement,
 }
 
 /**
@@ -109,7 +143,6 @@ export function editor(root: HTMLElement, config?: Configuration): void {
         root: root,
     };
 
-    // For each item, build selector and find items
     for (let item of config.items) {
         const selectors = buildItemSelector(item);
         for (let element of (<HTMLElement[]><any>root.querySelectorAll(selectors))) {
@@ -179,10 +212,17 @@ function initSingleItem(element: HTMLElement, editor: Editor): boolean {
  * Initialize a single item.
  */
 function initItem(element: HTMLElement, item: Item, editor: Editor): void {
-    // @todo once implemented, add here:
-    //   - hover / tooltip behavior
-    //   - menus, if there are?
+    if (item.editable) {
+        // Since that all properties on the Editable interface are optional
+        // it's safe to cast the Item as Editable.
+        initEditableItem(element, <Editable>item, editor);
+    }
+}
 
+/**
+ * Initialize an editable item
+ */
+function initEditableItem(element: HTMLElement, item: Editable, editor: Editor) {
     // Make item editable
     element.contentEditable = "true";
 
@@ -191,39 +231,57 @@ function initItem(element: HTMLElement, item: Item, editor: Editor): void {
         if (!event.target) {
             return;
         }
-        if (event.keyCode !== 13) {
-            return; // Not the enter key
-        }
 
-        if (!element.parentElement) {
-            throw `element is invalid (has no parent): ${element}`;
-        }
+        if (event.keyCode === 13) { // Enter
+            if (!element.parentElement) {
+                throw `element is invalid (has no parent): ${element}`;
+            }
 
-        event.stopPropagation();
-        event.preventDefault();
+            event.stopPropagation();
+            event.preventDefault();
 
-        if (item.onEnterKeyPress) {
-            item.onEnterKeyPress(element);
-        } else {
-            // Default behavior is document within the Item interface: per
-            // default we just create a new element right after, which is
-            // either p, or any tag specified by the onEnterKeyPressCreateTag
-            // property
-            const tagName: string = item.onEnterKeyPressCreateTag || "p";
-            const sibling = document.createElement(tagName);
+            if (item.onEnterKeyPress) {
+                item.onEnterKeyPress(element);
+            } else {
+                // Default behavior is document within the Editables interface: per
+                // default we just create a new element right after, which is
+                // either p, or any tag specified by the onEnterKeyPressCreateTag
+                // property
+                const tagName: string = item.onEnterKeyPressCreateTag || "p";
+                const sibling = document.createElement(tagName);
 
-            // Insert element at the right position
-            element.parentElement.insertBefore(sibling, element.nextElementSibling);
+                // Insert element at the right position
+                element.parentElement.insertBefore(sibling, element.nextElementSibling);
 
-            // In the end, initialize it, it must be in the right DOM position
-            // to be correctly initialized
-            initSingleItem(sibling, editor);
+                // In the end, initialize it, it must be in the right DOM position
+                // to be correctly initialized
+                initSingleItem(sibling, editor);
 
-            // A void space will force the item to reserve space for text
-            sibling.innerText = "\n";
+                // A void space will force the item to reserve space for text
+                sibling.innerText = "\n";
 
-            // And the very last touch, focus!
-            sibling.focus();
+                // And the very last touch, focus!
+                sibling.focus();
+            }
+        } else if (event.keyCode === 8) { // Backspace
+            if (!element.parentElement) {
+                throw `element is invalid (has no parent): ${element}`;
+            }
+
+            // @todo
+            //  - It should not remove the item if it's the last sibling
+            //  - OR it could, but it must deal with locked parents too
+            if (element.innerText === "" || element.innerText === "\n") {
+                event.stopPropagation();
+                event.preventDefault();
+
+                // Simulate "Shift+Tab" on the element to focus the parent in
+                // tabindex, ensuring the user may continue to edit without the
+                // mouse.
+                Edit.selectTabbablePrev(editor.root);
+
+                element.parentElement.removeChild(element);
+            }
         }
     });
 }
